@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagram Struktur Data – Sistem Jadwal Akademik</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --card: #161d2e;
+    --border: #1e2d45;
+    --accent1: #3b82f6;
+    --accent2: #10b981;
+    --accent3: #f59e0b;
+    --accent4: #ec4899;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --node-bg: #1e3a5f;
+    --code-bg: #0d1117;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  .header .badge {
+    display: inline-block;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.35);
+    color: var(--accent1);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .header h1 {
+    font-size: clamp(22px, 4vw, 38px);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .header h1 span { color: var(--accent1); }
+  .header p { color: var(--muted); font-size: 13px; }
+
+  /* SECTION */
+  .section { margin-bottom: 60px; }
+  .section-title {
+    display: flex;
+    align-items: center; gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .section-title .num {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+  .section-title h2 { font-size: clamp(14px, 2.5vw, 20px); font-weight: 700; flex: 1; min-width: 0; }
+  .section-title .tag {
+    margin-left: auto;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 10px; border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  /* ===== COLORS ===== */
+  .s1 .num { background: rgba(59,130,246,0.2); color: var(--accent1); }
+  .s1 .tag { background: rgba(59,130,246,0.15); color: var(--accent1); }
+  .s1 .card::before { background: var(--accent1); }
+  .s2 .num { background: rgba(16,185,129,0.2); color: var(--accent2); }
+  .s2 .tag { background: rgba(16,185,129,0.15); color: var(--accent2); }
+  .s2 .card::before { background: var(--accent2); }
+  .s3 .num { background: rgba(245,158,11,0.2); color: var(--accent3); }
+  .s3 .tag { background: rgba(245,158,11,0.15); color: var(--accent3); }
+  .s3 .card::before { background: var(--accent3); }
+  .s4 .num { background: rgba(236,72,153,0.2); color: var(--accent4); }
+  .s4 .tag { background: rgba(236,72,153,0.15); color: var(--accent4); }
+  .s4 .card::before { background: var(--accent4); }
+
+  /* ===== SECTION TITLE LABELS ===== */
+  .adj-title, .ht-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 14px;
+  }
+
+  /* ===== GRAPH ===== */
+  .graph-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 680px) { .graph-area { grid-template-columns: 1fr; } }
+
+  svg.graf { width: 100%; height: auto; display: block; }
+  .node circle { transition: r 0.2s; cursor: pointer; }
+  .node:hover circle { r: 32; }
+  .node text { pointer-events: none; font-family: 'JetBrains Mono', monospace; }
+
+  .adj-row {
+    display: flex;
+    align-items: center; gap: 8px;
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+  .adj-key {
+    background: rgba(59,130,246,0.2);
+    border: 1px solid rgba(59,130,246,0.4);
+    color: var(--accent1);
+    padding: 6px 10px; border-radius: 8px;
+    font-weight: 700;
+    min-width: 56px;
+    text-align: center;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .arrow { color: var(--muted); font-size: 16px; flex-shrink: 0; }
+  .adj-vals { display: flex; gap: 5px; flex-wrap: wrap; }
+  .adj-val {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 4px 9px; border-radius: 6px;
+    font-size: 11px;
+  }
+  .adj-val.conflict { border-color: rgba(236,72,153,0.5); color: var(--accent4); }
+
+  .legend {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .legend-line { width: 24px; height: 2px; flex-shrink: 0; }
+
+  /* ===== HASH TABLE ===== */
+  .ht-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 680px) { .ht-wrap { grid-template-columns: 1fr; } }
+
+  .ht-key-formula {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin-bottom: 16px;
+    line-height: 1.9;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .ht-key-formula .kw { color: var(--accent3); }
+  .ht-key-formula .val { color: var(--accent2); }
+  .ht-key-formula .op { color: var(--muted); }
+
+  /* Scrollable table wrappers */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  .ht-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'JetBrains Mono', monospace; min-width: 340px; }
+  .ht-table th {
+    background: rgba(16,185,129,0.15); color: var(--accent2);
+    padding: 8px 12px; text-align: left;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    border-bottom: 1px solid rgba(16,185,129,0.3);
+    white-space: nowrap;
+  }
+  .ht-table td {
+    padding: 9px 12px; border-bottom: 1px solid var(--border);
+    color: var(--text); font-size: 11px;
+  }
+  .ht-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .ht-table td.key-col { color: var(--accent2); font-weight: 600; white-space: nowrap; }
+
+  .bucket-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  }
+  .bucket-idx {
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.35);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent2); font-weight: 700; font-size: 11px;
+  }
+  .bucket-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px; color: var(--text); flex: 1;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 10px;
+  }
+  .bucket-cell.empty { color: var(--muted); font-style: italic; }
+  .bucket-cell.filled { border-color: rgba(16,185,129,0.3); }
+
+  /* ===== PRIORITY QUEUE ===== */
+  .pq-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 680px) { .pq-wrap { grid-template-columns: 1fr; } }
+
+  svg.heap { width: 100%; height: auto; display: block; }
+
+  .pq-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'JetBrains Mono', monospace; min-width: 300px; }
+  .pq-table th {
+    background: rgba(245,158,11,0.15); color: var(--accent3);
+    padding: 8px 10px; text-align: left;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    border-bottom: 1px solid rgba(245,158,11,0.3); white-space: nowrap;
+  }
+  .pq-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; }
+  .pq-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 6px;
+    font-weight: 700; font-size: 11px;
+  }
+
+  .pq-formula {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    margin-top: 16px; line-height: 2;
+    overflow-x: auto;
+  }
+  .pq-formula .kw { color: var(--accent3); font-weight: 700; }
+  .pq-formula .cm { color: var(--muted); }
+  .pq-formula .num2 { color: #a78bfa; }
+  .pq-formula .op { color: var(--muted); }
+
+  /* ===== COMPLEXITY ===== */
+  .complexity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 540px) { .complexity-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 360px) { .complexity-grid { grid-template-columns: 1fr; } }
+
+  .c-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; text-align: center;
+    transition: border-color 0.2s, transform 0.2s; cursor: default;
+  }
+  .c-box:hover { transform: translateY(-3px); }
+  .c-box .c-struct { font-size: 10px; color: var(--muted); margin-bottom: 6px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  .c-box .c-op { font-size: 11px; color: var(--text); margin-bottom: 10px; line-height: 1.4; min-height: 30px; }
+  .c-box .c-big { font-family: 'JetBrains Mono', monospace; font-size: clamp(16px, 3vw, 22px); font-weight: 700; }
+  .c1 { border-color: rgba(59,130,246,0.3); }
+  .c1:hover { border-color: var(--accent1); }
+  .c1 .c-big { color: var(--accent1); }
+  .c2 { border-color: rgba(16,185,129,0.3); }
+  .c2:hover { border-color: var(--accent2); }
+  .c2 .c-big { color: var(--accent2); }
+  .c3 { border-color: rgba(245,158,11,0.3); }
+  .c3:hover { border-color: var(--accent3); }
+  .c3 .c-big { color: var(--accent3); }
+
+  /* ===== TAMBAHAN STYLE JADWAL ===== */
+  .jadwal-table { width:100%; border-collapse:collapse; font-size:11px; }
+  .jadwal-table th, .jadwal-table td {
+    border:1px solid var(--border);
+    padding:10px;
+    text-align:center;
+    vertical-align:middle;
+  }
+  .jadwal-table th {
+    background:rgba(59,130,246,0.1);
+    color:var(--accent1);
+    font-weight:700;
+  }
+  .jadwal-table .jam {
+    background:var(--surface);
+    font-weight:600;
+    color:var(--muted);
+  }
+  .jadwal-table .mk {
+    min-height:50px;
+  }
+  .jadwal-table .nama-mk { font-weight:600; margin-bottom:4px; }
+  .jadwal-table .detail { font-size:9px; color:var(--muted); }
+  .biru { background:rgba(59,130,246,0.12); border-color:var(--accent1)!important; }
+  .hijau { background:rgba(16,185,129,0.12); border-color:var(--accent2)!important; }
+  .kuning { background:rgba(245,158,11,0.12); border-color:var(--accent3)!important; }
+  .merah { background:rgba(236,72,153,0.12); border-color:var(--accent4)!important; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; margin-top: 60px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted); line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="badge">Minggu 13 · Algoritma dan Struktur Data</div>
+    <h1>Diagram <span>Struktur Data</span><br>Sistem Jadwal Akademik</h1>
+    <p>Universitas Bumigora · Muhammad Rizal · I Komang Yoga Winarna · Ardiansyah</p>
+  </div>
+
+  <!-- ===== SECTION 1: GRAF ===== -->
+  <div class="section s1">
+    <div class="section-title">
+      <div class="num">01</div>
+      <h2>Graf (Graph) — Representasi Konflik Jadwal</h2>
+      <div class="tag">ADJACENCY LIST</div>
+    </div>
+    <div class="card">
+      <div class="graph-area">
+        <div>
+          <div class="adj-title">Visualisasi Graf</div>
+          <svg class="graf" viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+            <!-- Edges (konflik) -->
+            <line x1="200" y1="80" x2="100" y2="180" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,4" opacity="0.7"/>
+            <line x1="200" y1="80" x2="300" y2="180" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,4" opacity="0.7"/>
+            <line x1="200" y1="80" x2="200" y2="240" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,4" opacity="0.5"/>
+            <line x1="100" y1="180" x2="300" y2="180" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,4" opacity="0.7"/>
+            <line x1="100" y1="180" x2="200" y2="240" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,4" opacity="0.5"/>
+            <line x1="300" y1="180" x2="350" y2="270" stroke="#10b981" stroke-width="2" stroke-dasharray="5,4" opacity="0.6"/>
+
+            <!-- Label edge -->
+            <text x="128" y="118" fill="#ec4899" font-size="9" font-family="JetBrains Mono" opacity="0.9">dosen sama</text>
+            <text x="255" y="118" fill="#ec4899" font-size="9" font-family="JetBrains Mono" opacity="0.9">ruangan sama</text>
+            <text x="205" y="165" fill="#3b82f6" font-size="9" font-family="JetBrains Mono" opacity="0.8">dosen sama</text>
+
+            <!-- Node MK01 -->
+            <g class="node">
+              <circle cx="200" cy="80" r="28" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+              <text x="200" y="76" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="700">MK01</text>
+              <text x="200" y="92" text-anchor="middle" fill="#94a3b8" font-size="9">Algoritma</text>
+            </g>
+            <!-- Node MK02 -->
+            <g class="node">
+              <circle cx="100" cy="180" r="28" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+              <text x="100" y="176" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="700">MK02</text>
+              <text x="100" y="192" text-anchor="middle" fill="#94a3b8" font-size="9">Basis Data</text>
+            </g>
+            <!-- Node MK03 -->
+            <g class="node">
+              <circle cx="300" cy="180" r="28" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+              <text x="300" y="176" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="700">MK03</text>
+              <text x="300" y="192" text-anchor="middle" fill="#94a3b8" font-size="9">Jaringan</text>
+            </g>
+            <!-- Node MK04 -->
+            <g class="node">
+              <circle cx="200" cy="260" r="28" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+              <text x="200" y="256" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="700">MK04</text>
+              <text x="200" y="272" text-anchor="middle" fill="#94a3b8" font-size="9">Pemrograman</text>
+            </g>
+            <!-- Node MK05 -->
+            <g class="node">
+              <circle cx="350" cy="280" r="28" fill="#172a20" stroke="#10b981" stroke-width="2"/>
+              <text x="350" y="276" text-anchor="middle" fill="#10b981" font-size="11" font-weight="700">MK05</text>
+              <text x="350" y="292" text-anchor="middle" fill="#94a3b8" font-size="9">Statistika</text>
+            </g>
+
+            <!-- Legend warna slot -->
+            <rect x="0" y="0" width="150" height="66" rx="8" fill="rgba(0,0,0,0.4)"/>
+            <text x="8" y="15" fill="#64748b" font-size="9" font-family="JetBrains Mono">GRAPH COLORING</text>
+            <circle cx="16" cy="30" r="6" fill="#3b82f6"/>
+            <text x="26" y="34" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Senin 08:00</text>
+            <circle cx="80" cy="30" r="6" fill="#10b981"/>
+            <text x="90" y="34" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Selasa 10:00</text>
+            <circle cx="16" cy="50" r="6" fill="#f59e0b"/>
+            <text x="26" y="54" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Rabu</text>
+            <circle cx="80" cy="50" r="6" fill="#ec4899"/>
+            <text x="90" y="54" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">Kamis 13:00</text>
+          </svg>
+        </div>
+
+        <!-- Adjacency List -->
+        <div>
+          <div class="adj-title">Adjacency List (Representasi Kode)</div>
+          <div class="adj-row">
+            <div class="adj-key">MK01</div>
+            <div class="arrow">→</div>
+            <div class="adj-vals">
+              <span class="adj-val conflict">MK02</span>
+              <span class="adj-val conflict">MK03</span>
+              <span class="adj-val">MK04</span>
+            </div>
+          </div>
+          <div class="adj-row">
+            <div class="adj-key">MK02</div>
+            <div class="arrow">→</div>
+            <div class="adj-vals">
+              <span class="adj-val conflict">MK01</span>
+              <span class="adj-val conflict">MK03</span>
+              <span class="adj-val">MK04</span>
+            </div>
+          </div>
+          <div class="adj-row">
+            <div class="adj-key">MK03</div>
+            <div class="arrow">→</div>
+            <div class="adj-vals">
+              <span class="adj-val conflict">MK01</span>
+              <span class="adj-val conflict">MK02</span>
+              <span class="adj-val">MK05</span>
+            </div>
+          </div>
+          <div class="adj-row">
+            <div class="adj-key">MK04</div>
+            <div class="arrow">→</div>
+            <div class="adj-vals">
+              <span class="adj-val">MK01</span>
+              <span class="adj-val">MK02</span>
+            </div>
+          </div>
+          <div class="adj-row">
+            <div class="adj-key">MK05</div>
+            <div class="arrow">→</div>
+            <div class="adj-vals">
+              <span class="adj-val">MK03</span>
+            </div>
+          </div>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-line" style="background:#ec4899;"></div>
+              <span>Konflik (dosen/ruangan sama)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-line" style="background:#3b82f6;"></div>
+              <span>Relasi biasa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 2: HASH TABLE ===== -->
+  <div class="section s2">
+    <div class="section-title">
+      <div class="num">02</div>
+      <h2>Hash Table — Penyimpanan Jadwal</h2>
+      <div class="tag">KEY-VALUE O(1)</div>
+    </div>
+    <div class="card">
+      <div class="ht-wrap">
+        <div>
+          <div class="ht-title">Format Key &amp; Contoh Data</div>
+          <div class="ht-key-formula"><span class="kw">KEY</span> <span class="op">=</span> <span class="val">HARI</span> <span class="op">+</span> <span class="val">"_"</span> <span class="op">+</span> <span class="val">JAM</span> <span class="op">+</span> <span class="val">"_"</span> <span class="op">+</span> <span class="val">RUANGAN</span>
+<span class="op">ex:</span> <span class="val">"SENIN_08:00_R101"</span>
+<span class="op">ex:</span> <span class="val">"SELASA_10:00_R202"</span>
+<span class="op">ex:</span> <span class="val">"RABU_13:00_R103"</span></div>
+          <div class="table-scroll">
+            <table class="ht-table">
+              <thead>
+                <tr><th>Key (Unik)</th><th>Mata Kuliah</th><th>Dosen</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="key-col">SENIN_08:00_R101</td><td>Algoritma (MK01)</td><td>Bu Dasriani</td></tr>
+                <tr><td class="key-col">SELASA_10:00_R202</td><td>Basis Data (MK02)</td><td>Pak Wira</td></tr>
+                <tr><td class="key-col">RABU_13:00_R103</td><td>Jaringan (MK03)</td><td>Bu Sari</td></tr>
+                <tr><td class="key-col">KAMIS_08:00_R101</td><td>Pemrograman (MK04)</td><td>Bu Dasriani</td></tr>
+                <tr><td class="key-col">JUMAT_10:00_R202</td><td>Statistika (MK05)</td><td>Pak Budi</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="ht-title">Visualisasi Bucket Array</div>
+          <div class="bucket-row">
+            <div class="bucket-idx">0</div>
+            <div class="bucket-cell filled">SENIN_08:00_R101 → MK01</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-idx">1</div>
+            <div class="bucket-cell empty">— kosong —</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-idx">2</div>
+            <div class="bucket-cell filled">SELASA_10:00_R202 → MK02</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-idx">3</div>
+            <div class="bucket-cell filled">RABU_13:00_R103 → MK03</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-idx">4</div>
+            <div class="bucket-cell empty">— kosong —</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-idx">5</div>
+            <div class="bucket-cell filled">KAMIS_08:00_R101 → MK04</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-idx">6</div>
+            <div class="bucket-cell empty">— kosong —</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-idx">7</div>
+            <div class="bucket-cell filled">JUMAT_10:00_R202 → MK05</div>
+          </div>
+          <div style="margin-top:12px; font-size:10px; color:var(--muted); font-family:'JetBrains Mono',monospace;">
+            hash("SENIN_08:00_R101") → bucket[0]
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 3: PRIORITY QUEUE ===== -->
+  <div class="section s3">
+    <div class="section-title">
+      <div class="num">03</div>
+      <h2>Priority Queue — Urutan Pemrosesan Mata Kuliah</h2>
+      <div class="tag">MAX-HEAP O(log n)</div>
+    </div>
+    <div class="card">
+      <div class="pq-wrap">
+        <div>
+          <div class="ht-title">Visualisasi Max-Heap Tree</div>
+          <svg class="heap" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+            <!-- Edges -->
+            <line x1="200" y1="55" x2="110" y2="125" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/>
+            <line x1="200" y1="55" x2="290" y2="125" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/>
+            <line x1="110" y1="125" x2="65" y2="200" stroke="#f59e0b" stroke-width="1.5" opacity="0.4"/>
+            <line x1="110" y1="125" x2="155" y2="200" stroke="#f59e0b" stroke-width="1.5" opacity="0.4"/>
+            <line x1="290" y1="125" x2="245" y2="200" stroke="#f59e0b" stroke-width="1.5" opacity="0.4"/>
+            <line x1="290" y1="125" x2="335" y2="200" stroke="#f59e0b" stroke-width="1.5" opacity="0.4"/>
+
+            <!-- Level 0 root -->
+            <circle cx="200" cy="48" r="30" fill="rgba(245,158,11,0.25)" stroke="#f59e0b" stroke-width="2.5"/>
+            <text x="200" y="44" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700" font-family="JetBrains Mono">MK01</text>
+            <text x="200" y="57" text-anchor="middle" fill="#e2e8f0" font-size="10" font-family="JetBrains Mono">P=85</text>
+
+            <!-- Level 1 -->
+            <circle cx="110" cy="120" r="26" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="110" y="116" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700" font-family="JetBrains Mono">MK03</text>
+            <text x="110" y="129" text-anchor="middle" fill="#e2e8f0" font-size="10" font-family="JetBrains Mono">P=72</text>
+
+            <circle cx="290" cy="120" r="26" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="290" y="116" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700" font-family="JetBrains Mono">MK02</text>
+            <text x="290" y="129" text-anchor="middle" fill="#e2e8f0" font-size="10" font-family="JetBrains Mono">P=68</text>
+
+            <!-- Level 2 -->
+            <circle cx="65" cy="195" r="22" fill="rgba(245,158,11,0.1)" stroke="#64748b" stroke-width="1.5"/>
+            <text x="65" y="191" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="JetBrains Mono">MK04</text>
+            <text x="65" y="203" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">P=55</text>
+
+            <circle cx="155" cy="195" r="22" fill="rgba(245,158,11,0.1)" stroke="#64748b" stroke-width="1.5"/>
+            <text x="155" y="191" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="JetBrains Mono">MK05</text>
+            <text x="155" y="203" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">P=50</text>
+
+            <circle cx="245" cy="195" r="22" fill="rgba(245,158,11,0.1)" stroke="#64748b" stroke-width="1.5"/>
+            <text x="245" y="191" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="JetBrains Mono">MK06</text>
+            <text x="245" y="203" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">P=45</text>
+
+            <circle cx="335" cy="195" r="22" fill="rgba(245,158,11,0.1)" stroke="#64748b" stroke-width="1.5"/>
+            <text x="335" y="191" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="JetBrains Mono">MK07</text>
+            <text x="335" y="203" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="JetBrains Mono">P=38</text>
+
+            <text x="200" y="245" text-anchor="middle" fill="#64748b" font-size="9" font-family="JetBrains Mono">← poll() mengambil root (prioritas tertinggi)</text>
+          </svg>
+        </div>
+
+        <div>
+          <div class="ht-title">Data Mata Kuliah &amp; Nilai Prioritas</div>
+          <div class="table-scroll">
+            <table class="pq-table">
+              <thead>
+                <tr><th>#</th><th>Mata Kuliah</th><th>SKS</th><th>Status</th><th>Prioritas</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="rank-badge" style="background:rgba(245,158,11,0.3);color:#f59e0b;">1</span></td>
+                  <td style="color:#e2e8f0;">Algoritma</td>
+                  <td style="color:#94a3b8;">3</td>
+                  <td style="color:#10b981;font-size:10px;">Wajib</td>
+                  <td style="color:#f59e0b;font-weight:700;">85</td>
+                </tr>
+                <tr>
+                  <td><span class="rank-badge" style="background:rgba(245,158,11,0.2);color:#f59e0b;">2</span></td>
+                  <td style="color:#e2e8f0;">Jaringan</td>
+                  <td style="color:#94a3b8;">3</td>
+                  <td style="color:#10b981;font-size:10px;">Wajib</td>
+                  <td style="color:#f59e0b;font-weight:700;">72</td>
+                </tr>
+                <tr>
+                  <td><span class="rank-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;">3</span></td>
+                  <td style="color:#e2e8f0;">Basis Data</td>
+                  <td style="color:#94a3b8;">2</td>
+                  <td style="color:#10b981;font-size:10px;">Wajib</td>
+                  <td style="color:#f59e0b;font-weight:700;">68</td>
+                </tr>
+                <tr>
+                  <td><span class="rank-badge" style="background:rgba(100,116,139,0.2);color:#64748b;">4</span></td>
+                  <td style="color:#94a3b8;">Pemrograman</td>
+                  <td style="color:#94a3b8;">2</td>
+                  <td style="color:#64748b;font-size:10px;">Pilihan</td>
+                  <td style="color:#94a3b8;">55</td>
+                </tr>
+                <tr>
+                  <td><span class="rank-badge" style="background:rgba(100,116,139,0.2);color:#64748b;">5</span></td>
+                  <td style="color:#94a3b8;">Statistika</td>
+                  <td style="color:#94a3b8;">2</td>
+                  <td style="color:#64748b;font-size:10px;">Pilihan</td>
+                  <td style="color:#94a3b8;">50</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pq-formula">
+<span class="kw">PRIORITAS</span> =
+  (sks <span class="op">×</span> <span class="num2">10</span>)
+  + (wajib ? <span class="num2">20</span> : <span class="num2">0</span>)
+  + (<span class="num2">7</span> - semester)
+<span class="cm">// MK01: (3×10) + 20 + (7-2) = 85</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 4: KOMPLEKSITAS ===== -->
+  <div class="section s4">
+    <div class="section-title">
+      <div class="num">04</div>
+      <h2>Rekap Kompleksitas Waktu</h2>
+      <div class="tag">TIME COMPLEXITY</div>
+    </div>
+    <div class="card">
+      <div class="complexity-grid">
+        <div class="c-box c1">
+          <div class="c-struct">Graf</div>
+          <div class="c-op">Tambah Simpul / Sisi</div>
+          <div class="c-big">O(1)</div>
+        </div>
+        <div class="c-box c1">
+          <div class="c-struct">Graf</div>
+          <div class="c-op">Traversal (DFS/BFS)</div>
+          <div class="c-big">O(V+E)</div>
+        </div>
+        <div class="c-box c1">
+          <div class="c-struct">Graph Coloring</div>
+          <div class="c-op">Pewarnaan Greedy</div>
+          <div class="c-big">O(V²)</div>
+        </div>
+        <div class="c-box c2">
+          <div class="c-struct">Hash Table</div>
+          <div class="c-op">Simpan / Cari / Hapus</div>
+          <div class="c-big">O(1)*</div>
+        </div>
+        <div class="c-box c2">
+          <div class="c-struct">Hash Table</div>
+          <div class="c-op">Update Dinamis</div>
+          <div class="c-big">O(1)*</div>
+        </div>
+        <div class="c-box c2">
+          <div class="c-struct">Hash Table</div>
+          <div class="c-op">Iterasi Semua Data</div>
+          <div class="c-big">O(n)</div>
+        </div>
+        <div class="c-box c3">
+          <div class="c-struct">Priority Queue</div>
+          <div class="c-op">Enqueue / Dequeue</div>
+          <div class="c-big">O(log n)</div>
+        </div>
+        <div class="c-box c3">
+          <div class="c-struct">Priority Queue</div>
+          <div class
