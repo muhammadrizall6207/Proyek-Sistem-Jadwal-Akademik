@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowchart Lengkap - Sistem Jadwal Akademik</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background-color: #0a0e1a;
+            padding: 30px 20px;
+            color: #e2e8f0;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #3b82f6;
+            font-size: 24px;
+        }
+        .deskripsi {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .flowchart-box {
+            background: #111827;
+            border: 1px solid #1e2d45;
+            border-radius: 16px;
+            padding: 40px 20px;
+            overflow-x: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            min-height: 900px;
+        }
+        .penjelasan {
+            background: #111827;
+            border: 1px solid #1e2d45;
+            border-radius: 16px;
+            padding: 25px;
+        }
+        .penjelasan h3 {
+            color: #3b82f6;
+            margin-bottom: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+        .daftar-bangun {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .bentuk {
+            width: 40px;
+            height: 40px;
+            display: block;
+        }
+        .oval { background: #2ECC71; border-radius: 50%; }
+        .kotak { background: #3498DB; border-radius: 3px; }
+        .jajar { background: #9B59B6; clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%); }
+        .ketupat { background: #F39C12; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+        .bunglon { background: #EC4899; transform: skewX(-12deg); border-radius: 3px; }
+        .teks { font-size: 12px; line-height: 1.3; }
+        @media (max-width: 768px) { .daftar-bangun { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📌 FLOWCHART LENGKAP: SISTEM JADWAL AKADEMIK</h1>
+        <p class="deskripsi">Algoritma lengkap menggunakan Graf, Priority Queue, Hash Table & Graph Coloring</p>
+        
+        <div class="flowchart-box">
+            <div class="mermaid">
+                flowchart TD
+                    direction TB
+                    linkStyle default stroke-width:2px,stroke:#94a3b8
+                    
+                    %% DEFINISI WARNA & BENTUK
+                    classDef startend fill:#2ECC71,stroke:#1E2D45,stroke-width:2px,color:#FFFFFF,font-weight:bold
+                    classDef proses fill:#3498DB,stroke:#1E2D45,stroke-width:2px,color:#FFFFFF
+                    classDef data fill:#9B59B6,stroke:#1E2D45,stroke-width:2px,color:#FFFFFF
+                    classDef keputusan fill:#F39C12,stroke:#1E2D45,stroke-width:2px,color:#FFFFFF
+                    classDef struktur fill:#EC4899,stroke:#1E2D45,stroke-width:2px,color:#FFFFFF
+
+                    %% =========================================
+                    %% ALUR LENGKAP & SUDAH DITAMBAH BAGIAN KURANG
+                    %% =========================================
+                    
+                    A([MULAI]):::startend
+                    
+                    %% 1. INPUT
+                    B["INPUT DATA<br/>• Kode MK<br/>• Nama MK<br/>• SKS<br/>• Status<br/>• Semester<br/>• Dosen<br/>• Ruangan"]:::proses
+                    
+                    %% +++ TAMBAHAN YANG KURANG: VALIDASI DATA +++
+                    C{DATA LENGKAP &<br>BENAR?}:::keputusan
+                    
+                    D["SIMPAN DATA KE OBJEK<br/>Hitung Nilai Prioritas<br/>(Rumus: SKS + Status + Semester)"]:::data
+                    
+                    %% 2. DETEKSI KONFLIK
+                    E["DETEKSI KONFLIK<br/>Cek: Dosen Sama?<br/>Ruangan Sama?<br/>Waktu Sama?"]:::keputusan
+                    
+                    %% 3. GRAF
+                    F["BANGUN GRAF KONFLIK<br/>• Simpul = Mata Kuliah<br/>• Sisi Merah = Konflik<br/>• Sisi Biru = Hubungan<br/>(Kelas: GrafKonflik.java)"]:::struktur
+                    
+                    %% 4. URUTKAN
+                    G["URUTKAN PRIORITAS<br/>Gunakan Priority Queue<br/>Urutan: Tertinggi → Terendah<br/>(Wajib & SKS Besar Didahulukan)"]:::proses
+                    
+                    %% 5. PENJADWALAN
+                    H["PROSES GRAPH COLORING<br/>Beri 'Warna' = Slot Waktu<br/>Aturan: Simpul Terhubung = Warna Beda<br/>Cari Hari & Jam Kosong"]:::struktur
+                    
+                    I{WAKTU<br>TERSEDIA?}:::keputusan
+                    
+                    J["TETAPKAN JADWAL<br/>Pilih Slot Waktu Terbaik"]:::proses
+                    
+                    %% 6. PENYIMPANAN
+                    K["SIMPAN KE HASH TABLE<br/>Key = Hari_Jam_Ruangan<br/>Value = Detail MK<br/>(Akses Cepat O(1))"]:::data
+                    
+                    L{SEMUA MATA KULIAH<br>SUDAH DIJADWALKAN?}:::keputusan
+                    
+                    M["TAMPILKAN HASIL<br/>• Daftar Jadwal Akhir<br/>• Laporan Konflik<br/>• Cek Ulang Kesesuaian"]:::proses
+                    
+                    N([SELESAI]):::startend
+
+                    %% =========================================
+                    %% GARIS PANAH LURUS RAPI
+                    %% =========================================
+                    A --> B
+                    B --> C
+                    C -->|TIDAK| B
+                    C -->|YA| D
+                    D --> E
+                    E --> F
+                    F --> G
+                    G --> H
+                    H -->|TIDAK| H
+                    H -->|YA| I
+                    I -->|YA| J
+                    I -->|TIDAK| H
+                    J --> K
+                    K --> L
+                    L -->|BELUM| G
+                    L -->|SUDAH| M
+                    M --> N
+            </div>
+        </div>
+
+        <!-- KETERANGAN BENTUK -->
+        <div class="penjelasan">
+            <h3>📝 Keterangan Bentuk Bangun Datar</h3>
+            <div class="daftar-bangun">
+                <div class="item">
+                    <span class="bentuk oval"></span>
+                    <div class="teks">
+                        <b>OVAL</b><br>
+                        Mulai / Selesai
+                    </div>
+                </div>
+                <div class="item">
+                    <span class="bentuk kotak"></span>
+                    <div class="teks">
+                        <b>PERSEGI</b><br>
+                        Proses / Input / Output
+                    </div>
+                </div>
+                <div class="item">
+                    <span class="bentuk jajar"></span>
+                    <div class="teks">
+                        <b>JAJAR GENJANG</b><br>
+                        Simpan Data / Hitung
+                    </div>
+                </div>
+                <div class="item">
+                    <span class="bentuk ketupat"></span>
+                    <div class="teks">
+                        <b>BELAH KETUPAT</b><br>
+                        Keputusan (Ya/Tidak)
+                    </div>
+                </div>
+                <div class="item">
+                    <span class="bentuk bunglon"></span>
+                    <div class="teks">
+                        <b>SEGI MIRING</b><br>
+                        Struktur Data (Graf/Hash)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: { 
+                curve: 'linear',
+                nodeSpacing: 50,
+                rankSpacing: 45
+            }
+        });
+    </script>
+</body>
+</html>
